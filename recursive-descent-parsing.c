@@ -10,7 +10,7 @@ enum {NUL,NUMBER,PLUS,STAR,LPAREN,RPAREN,END} token; //기타, 숫자, +, *, (, 
 
 /*
 BNF 표기(or Context-Free Grammar) - G=(T,N,P,S), lamda는 빈문자
-    G1=({+,*,(,),0,1,2,3,4,5,6,7,8,9}, {exprssion,expr_rest,term,term_rest,factor,number},P1,exprssion)
+    G1=({+,*,(,),정수,실수}, {exprssion,expr_rest,term,term_rest,factor,number},P1,exprssion)
 
     P1:
         <expression> => <term> <expr_rest>
@@ -96,7 +96,7 @@ float term(){
 float factor(){
     float result;
     if(token==NUMBER){ //<factor> => <number>인 경우
-        result=num; //<number> => 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
+        result=num; //<number> => 정수 | 실수
         get_token();
     }
     else if(token==LPAREN){ //<factor> => ( <expression> )인 경우
