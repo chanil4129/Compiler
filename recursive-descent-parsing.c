@@ -6,7 +6,7 @@
 
 char ch=' ';
 float num;
-enum {NUL,NUMBER,PLUS,STAR,LPAREN,RPAREN,END} token; //기타, 숫자, 온점, +, *, (, ), EOF
+enum {NUL,NUMBER,PLUS,STAR,LPAREN,RPAREN,END} token; //기타, 숫자, +, *, (, ), EOF
 
 /*
 BNF 표기(or Context-Free Grammar) - G=(T,N,P,S), lamda는 빈문자
@@ -21,7 +21,7 @@ BNF 표기(or Context-Free Grammar) - G=(T,N,P,S), lamda는 빈문자
                     | lamda
         <factor> => <number>
                     | ( <expression> )
-        <number> => 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
+        <number> => 정수 | 실수
 */
 void get_token();
 float expression();
@@ -46,19 +46,19 @@ void get_token(){
     while(ch==' '||ch=='\t') ch=getchar(); //공백은 무시
     if(ch>='0'&&ch<='9') { //숫자일 경우 num 저장
         char number[NUM_MAX]; //일단 문자열에 수를 저장
-        int int_float=1; //int는 1, float는 0
+        int int_float=0; //int는 0, float는 1
         int idx=0;
-
         token=NUMBER;
         number[idx++]=ch;
         while((ch>='0'&&ch<='9')||ch=='.'){
             ch=getchar();
-            if(ch=='.') int_float=0; //.이 있다면 실수형
+            if(ch=='.') int_float++; //.이 있다면 실수형
             number[idx++]=ch;
         }
         number[idx]='\0';
-        if(int_float) num=atoi(number);
-        else num=atof(number); 
+        if(int_float==0) num=atoi(number);
+        else if(int_float==1)num=atof(number); 
+        else error(5);
         ungetc(ch,stdin); //한글자 더 읽은 것이므로 다시 입력 스트림에 푸시
     }
     else if(ch=='+') token=PLUS;
@@ -120,6 +120,8 @@ void error(int i){
         case 3: printf("error: EOF expeted\n");
                 break;
         case 4: printf("error: dissatisfaction letter\n");
+                break;
+        case 5: printf("error: none number\n");
                 break;
     }
     exit(1);
