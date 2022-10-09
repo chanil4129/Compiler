@@ -1,6 +1,6 @@
 digit                           [0-9]
 letter                          [a-zA-Z]
-delim                           [\t]
+delim                           [ \t]
 line                            [\n]
 ws                              {delim}+
 %{
@@ -12,6 +12,9 @@ int checkIdentifier();
 {ws}                            {;}
 {line}                          {line_no++;}
 auto                            {return(AUTO_SYM);}
+const                           {return(CONST_SYM);}
+volatile                        {return(VOLATILE_SYM);}
+goto                            {return(GOTO_SYM);}
 break                           {return(BREAK_SYM);}
 case                            {return(CASE_SYM);}
 continue                        {return(CONTINUE_SYM);}
@@ -34,6 +37,8 @@ while                           {return(WHILE_SYM);}
 "\->"                           {return(ARROW);}
 "<"                             {return(LSS);}
 ">"                             {return(GTR);}
+"<<"                            {return(LSSLSS);}
+">>"                            {return(RSSRSS);}
 "<="                            {return(LEQ);}
 ">="                            {return(GEQ);}
 "=="                            {return(EQL);}
@@ -59,10 +64,6 @@ while                           {return(WHILE_SYM);}
 "\+"                            {return(PLUS);}
 "\-"                            {return(MINUS);}
 "\="                            {return(ASSIGN);}
-int                             {return(TYPE_IDENTIFIER);}
-float                           {return(TYPE_IDENTIFIER);}
-char                            {return(TYPE_IDENTIFIER);}
-void                            {return(TYPE_IDENTIFIER);}
 {digit}+                        {return(INTEGER_CONSTANT);}
 {digit}+\.{digit}+              {return(FLOAT_CONSTANT);}
 {letter}({letter}|{digit})*     {return(checkIdentifier(yytext));}

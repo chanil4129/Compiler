@@ -1,4 +1,4 @@
-%token AUTO_SYM BREAK_SYM CASE_SYM CONTINUE_SYM DEFAULT_SYM DO_SYM ELSE_SYM ENUM_SYM FOR_SYM IF_SYM RETURN_SYM SIZEOF_SYM STATIC_SYM STRUCT_SYM SWITCH_SYM TYPEDEF_SYM UNION_SYM WHILE_SYM PLUSPLUS MINUSMINUS ARROW LSS GTR LEQ GEQ EQL NEQ AMPAMP BARBAR DOTDOTDOT LP RP LB RB LR RR COLON PEROID COMMA EXCL STAR SLASH PERCENT AMP SEMICOLON PLUS MINUS ASSIGN TYPE_IDENTIFIER INTEGER_CONSTANT FLOAT_CONSTANT STRING_LITERAL CHARACTER_CONSTANT IDENTIFIER PERIOD
+%token AUTO_SYM BREAK_SYM CASE_SYM CONTINUE_SYM DEFAULT_SYM DO_SYM ELSE_SYM ENUM_SYM FOR_SYM IF_SYM RETURN_SYM SIZEOF_SYM STATIC_SYM STRUCT_SYM SWITCH_SYM TYPEDEF_SYM UNION_SYM WHILE_SYM PLUSPLUS MINUSMINUS ARROW LSS LSSLSS RSSRSS GTR LEQ GEQ EQL NEQ AMPAMP BARBAR DOTDOTDOT LP RP LB RB LR RR COLON PEROID COMMA EXCL STAR SLASH PERCENT AMP SEMICOLON PLUS MINUS ASSIGN TYPE_IDENTIFIER INTEGER_CONSTANT FLOAT_CONSTANT STRING_LITERAL CHARACTER_CONSTANT IDENTIFIER PERIOD CONST_SYM VOLATILE_SYM GOTO_SYM
 %start program
 
 %%
@@ -26,14 +26,20 @@ declaration
 declaration_specifiers
 	: type_specifier
 	| storage_class_specifier
+	| type_qualifier
 	| type_specifier declaration_specifiers
 	| storage_class_specifier declaration_specifiers
+	| type_qualifier declaration_specifiers
     ;
 storage_class_specifier
 	: AUTO_SYM
 	| STATIC_SYM
 	| TYPEDEF_SYM
     ;
+type_qualifier
+	: CONST_SYM
+	| VOLATILE_SYM
+	;
 init_declarator_list
 	: init_declarator
 	| init_declarator_list COMMA init_declarator
@@ -94,7 +100,7 @@ declarator
 	| direct_declarator
     ;
 pointer
-	: STAR
+	: STAR 
 	| STAR pointer
     ;
 
@@ -115,7 +121,7 @@ parameter_type_list_opt
 
 parameter_type_list
 	: parameter_list
-	| parameter_list DOTDOTDOT
+	| parameter_list COMMA DOTDOTDOT
     ;
 parameter_list
 	: parameter_declaration
@@ -143,7 +149,7 @@ direct_abstract_declarator
     ;
 
 initializer
-	: constant_expression
+	: expression
 	| LR initializer_list RR
     | LR initializer_list COMMA RR
     ;
@@ -202,7 +208,8 @@ expression_opt
 jump_statement
 	: RETURN_SYM expression_opt SEMICOLON
 	| CONTINUE_SYM SEMICOLON
-	| BREAK_SYM SEMICOLON
+	| BREAK_SYM SEMICOLON 
+	| GOTO_SYM IDENTIFIER SEMICOLON
     ;
 
 primary_expression
@@ -264,9 +271,14 @@ additive_expression
 	| additive_expression PLUS multiplicative_expression
 	| additive_expression MINUS multiplicative_expression
     ;
+shift_expression
+	: additive_expression
+	| shift_expression LSSLSS additive_expression
+	| shift_expression RSSRSS additive_expression
+	;
 
 relational_expression
-	: additive_expression
+	: shift_expression
 	| relational_expression LSS additive_expression
 	| relational_expression GTR additive_expression
 	| relational_expression LEQ additive_expression

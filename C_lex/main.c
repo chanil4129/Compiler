@@ -12,6 +12,5 @@ void yyerror(char *s){
 }
 
 void yywrap(){
-    //adding
     return 1;
 }

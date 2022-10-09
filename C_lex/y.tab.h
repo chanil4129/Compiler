@@ -67,39 +67,44 @@ extern int yydebug;
     MINUSMINUS = 277,
     ARROW = 278,
     LSS = 279,
-    GTR = 280,
-    LEQ = 281,
-    GEQ = 282,
-    EQL = 283,
-    NEQ = 284,
-    AMPAMP = 285,
-    BARBAR = 286,
-    DOTDOTDOT = 287,
-    LP = 288,
-    RP = 289,
-    LB = 290,
-    RB = 291,
-    LR = 292,
-    RR = 293,
-    COLON = 294,
-    PEROID = 295,
-    COMMA = 296,
-    EXCL = 297,
-    STAR = 298,
-    SLASH = 299,
-    PERCENT = 300,
-    AMP = 301,
-    SEMICOLON = 302,
-    PLUS = 303,
-    MINUS = 304,
-    ASSIGN = 305,
-    TYPE_IDENTIFIER = 306,
-    INTEGER_CONSTANT = 307,
-    FLOAT_CONSTANT = 308,
-    STRING_LITERAL = 309,
-    CHARACTER_CONSTANT = 310,
-    IDENTIFIER = 311,
-    PERIOD = 312
+    LSSLSS = 280,
+    RSSRSS = 281,
+    GTR = 282,
+    LEQ = 283,
+    GEQ = 284,
+    EQL = 285,
+    NEQ = 286,
+    AMPAMP = 287,
+    BARBAR = 288,
+    DOTDOTDOT = 289,
+    LP = 290,
+    RP = 291,
+    LB = 292,
+    RB = 293,
+    LR = 294,
+    RR = 295,
+    COLON = 296,
+    PEROID = 297,
+    COMMA = 298,
+    EXCL = 299,
+    STAR = 300,
+    SLASH = 301,
+    PERCENT = 302,
+    AMP = 303,
+    SEMICOLON = 304,
+    PLUS = 305,
+    MINUS = 306,
+    ASSIGN = 307,
+    TYPE_IDENTIFIER = 308,
+    INTEGER_CONSTANT = 309,
+    FLOAT_CONSTANT = 310,
+    STRING_LITERAL = 311,
+    CHARACTER_CONSTANT = 312,
+    IDENTIFIER = 313,
+    PERIOD = 314,
+    CONST_SYM = 315,
+    VOLATILE_SYM = 316,
+    GOTO_SYM = 317
   };
 #endif
 /* Tokens.  */
@@ -125,39 +130,44 @@ extern int yydebug;
 #define MINUSMINUS 277
 #define ARROW 278
 #define LSS 279
-#define GTR 280
-#define LEQ 281
-#define GEQ 282
-#define EQL 283
-#define NEQ 284
-#define AMPAMP 285
-#define BARBAR 286
-#define DOTDOTDOT 287
-#define LP 288
-#define RP 289
-#define LB 290
-#define RB 291
-#define LR 292
-#define RR 293
-#define COLON 294
-#define PEROID 295
-#define COMMA 296
-#define EXCL 297
-#define STAR 298
-#define SLASH 299
-#define PERCENT 300
-#define AMP 301
-#define SEMICOLON 302
-#define PLUS 303
-#define MINUS 304
-#define ASSIGN 305
-#define TYPE_IDENTIFIER 306
-#define INTEGER_CONSTANT 307
-#define FLOAT_CONSTANT 308
-#define STRING_LITERAL 309
-#define CHARACTER_CONSTANT 310
-#define IDENTIFIER 311
-#define PERIOD 312
+#define LSSLSS 280
+#define RSSRSS 281
+#define GTR 282
+#define LEQ 283
+#define GEQ 284
+#define EQL 285
+#define NEQ 286
+#define AMPAMP 287
+#define BARBAR 288
+#define DOTDOTDOT 289
+#define LP 290
+#define RP 291
+#define LB 292
+#define RB 293
+#define LR 294
+#define RR 295
+#define COLON 296
+#define PEROID 297
+#define COMMA 298
+#define EXCL 299
+#define STAR 300
+#define SLASH 301
+#define PERCENT 302
+#define AMP 303
+#define SEMICOLON 304
+#define PLUS 305
+#define MINUS 306
+#define ASSIGN 307
+#define TYPE_IDENTIFIER 308
+#define INTEGER_CONSTANT 309
+#define FLOAT_CONSTANT 310
+#define STRING_LITERAL 311
+#define CHARACTER_CONSTANT 312
+#define IDENTIFIER 313
+#define PERIOD 314
+#define CONST_SYM 315
+#define VOLATILE_SYM 316
+#define GOTO_SYM 317
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
