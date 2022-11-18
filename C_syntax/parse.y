@@ -81,11 +81,11 @@ type_specifier
 struct_specifier
 	: struct_or_union IDENTIFIER		{$$=setTypeStructOrEnumIdentifier($1,$2,ID_STRUCT);}
 	  LR {$$=current_id; current_level++;} struct_declaration_list RR
-	  {checkForwardReference(); current_level--; current_id=$5; $$=setTypeField($3,$6)}
+	  {checkForwardReference(); current_level--; current_id=$5; $$=setTypeField($3,$6);}
 	| struct_or_union {$$=makeType($1);}
 	  LR {$$=current_id; current_level++;} struct_declaration_list RR
 	  {checkForwardReference(); current_level--; current_id=$4; $$=setTypeField($2,$5);}
-	| struct_or_union IDENTIFIER		{$$=getTypeOfStructOrEnumIdentifier($1,$2,ID_STRUCT);}
+	| struct_or_union IDENTIFIER		{$$=getTypeOfStructOrEnumRefIdentifier($1,$2,ID_STRUCT);}
     ;
 struct_or_union
 	: STRUCT_SYM	{$$=T_STRUCT;}
@@ -111,7 +111,7 @@ struct_declarator
 enum_specifier
 	: ENUM_SYM IDENTIFIER {$$=setTypeStructOrEnumIdentifier(T_ENUM,$2,ID_ENUM);} LR enumerator_list RR {$$=setTypeField($3,$5);}
 	| ENUM_SYM {$$=makeType(T_ENUM);} LR enumerator_list RR {$$=setTypeField($2,$4);}
-	| ENUM_SYM IDENTIFIER {$$=getTypeOfStructOrEnumIdentifier(T_ENUM,$2,ID_ENUM);}
+	| ENUM_SYM IDENTIFIER {$$=getTypeOfStructOrEnumRefIdentifier(T_ENUM,$2,ID_ENUM);}
     ;
 enumerator_list
 	: enumerator						{$$=$1;}
@@ -243,7 +243,6 @@ jump_statement
 	: RETURN_SYM expression_opt SEMICOLON	{$$=makeNode(N_STMT_RETURN,NIL,$2,NIL);}
 	| CONTINUE_SYM SEMICOLON				{$$=makeNode(N_STMT_CONTINUE,NIL,NIL,NIL);}
 	| BREAK_SYM SEMICOLON 					{$$=makeNode(N_STMT_BREAK,NIL,NIL,NIL);}
-	| GOTO_SYM IDENTIFIER SEMICOLON			{$$=makeNode(N_STMT_GO,NIL,NIL,NIL);}
     ;
 
 primary_expression
@@ -251,14 +250,14 @@ primary_expression
 	| INTEGER_CONSTANT	{$$=makeNode(N_EXP_INT_CONST,NIL,$1,NIL);}
 	| FLOAT_CONSTANT	{$$=makeNode(N_EXP_FLOAT_CONST,NIL,$1,NIL);}
 	| CHARACTER_CONSTANT	{$$=makeNode(N_EXP_CHAR_CONST,NIL,$1,NIL);}
-	| STRING_LITERAL	{$$=makeNode(N_EXP_STRING_CONST,NIL,$1,NIL);}
+	| STRING_LITERAL	{$$=makeNode(N_EXP_STRING_LITERAL,NIL,$1,NIL);}
 	| LP expression RP	{$$=$2;}
     ;
 
 postfix_expression
 	: primary_expression			{$$=$1;}
 	| postfix_expression LB expression RB					{$$=makeNode(N_EXP_ARRAY,$1,NIL,$3);}
-	| postfix_expression LP arg_expression_list_opt RP		{$$=makeNode(N_EXP_FUNCTION,$1,NIL,$3);}
+	| postfix_expression LP arg_expression_list_opt RP		{$$=makeNode(N_EXP_FUNCTION_CALL,$1,NIL,$3);}
 	| postfix_expression PERIOD IDENTIFIER					{$$=makeNode(N_EXP_STRUCT,$1,NIL,$3);}
 	| postfix_expression ARROW IDENTIFIER					{$$=makeNode(N_EXP_ARROW,$1,NIL,$3);}
 	| postfix_expression PLUSPLUS							{$$=makeNode(N_EXP_POST_INC,NIL,$1,NIL);}

@@ -7,7 +7,7 @@ PY=y.tab.c
 allk : $(PROG) $(PL) $(PY)
 
 $(PROG) : y.tab.c lex.yy.c main.c print.c
-	$(CC) y.tab.c lex.yy.c main.c print.c
+	$(CC) -o $@ y.tab.c lex.yy.c main.c print.c
 
 $(PL) : lex.l
 	lex lex.l
