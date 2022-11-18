@@ -12,7 +12,7 @@ extern int yylval;
 extern int line_no=1;
 extern A_ID *current_id;
 int checkIdentifier();
-char *makeString();
+char *makeString(char *s);
 %}
 %%
 {ws}                            {;}
