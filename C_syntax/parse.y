@@ -49,20 +49,14 @@ declaration
 declaration_specifiers
 	: type_specifier									{$$=makeSpecifier($1,0);}
 	| storage_class_specifier							{$$=makeSpecifier(0,$1);}
-	| type_qualifier									{$$=makeSpecifier($1,0);}
 	| type_specifier declaration_specifiers				{$$=updateSpecifier($2,$1,0);}
 	| storage_class_specifier declaration_specifiers	{$$=updateSpecifier($2,0,$1);}
-	| type_qualifier declaration_specifiers				{$$=updateSpecifier($2,$1,0);}
     ;
 storage_class_specifier
 	: AUTO_SYM			{$$=S_AUTO;}
 	| STATIC_SYM		{$$=S_STATIC;}
 	| TYPEDEF_SYM		{$$=S_TYPEDEF;}
     ;
-type_qualifier
-	: CONST_SYM			{$$=S_CONST;}
-	| VOLATILE_SYM		{$$=S_VOLATILE;}
-	;
 
 init_declarator_list_opt
 	:							{$$=makeDummyIdentifier();}
