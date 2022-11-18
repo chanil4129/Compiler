@@ -308,8 +308,6 @@ additive_expression
     ;
 shift_expression
 	: additive_expression		{$$=$1;}
-	| shift_expression LSSLSS additive_expression	{$$=makeNode(N_EXP_LSSLSS,$1,NIL,$3);}
-	| shift_expression RSSRSS additive_expression	{$$=makeNode(N_EXP_RSSRSS,$1,NIL,$3);}
 	;
 
 relational_expression
