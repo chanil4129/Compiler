@@ -257,7 +257,25 @@ A_ID *setDeclaratorTypeAndKind(A_ID *id,A_TYPE *t,ID_KIND k){
 }
 
 A_ID *setDeclaratorListSpecifier(A_ID *id,A_SPECIFIER *p){
-    
+    A_ID *a;
+    setDefaultSpecifier(p);
+    a=id;
+    while(a){
+        if(strlen(a->name)&&searchIdentifierAtCurrentLevel(a->name,a->prev))
+            syntax_error(12,a->name);
+        a=setDeclaratorElementType(a,p->type);
+        if(p->stor==S_TYPEDEF)
+            a->kind=ID_TYPE;
+        else if(a->type->kind==T_FUNC)
+            a->kind=ID_FUNC;
+        else
+            a->kind=ID_VAR;
+        a->specifier=p->stor;
+        if(a->specifier==S_NULL)
+            a->specifier=S_AUTO;
+        a=a->link;
+    }
+    return id;
 }   
 
 A_ID *setFunctionDeclaratorSpecifier(A_ID *id,A_SPECIFIER *p){
@@ -274,7 +292,7 @@ A_ID *setFunctionDeclaratorSpecifier(A_ID *id,A_SPECIFIER *p){
         id->kind=ID_FUNC;
     }
     a=searchIdentifierAtCurrentLevel(id->name,id->prev);
-    if(a){
+    if(a)
         if(a->kind!=ID_FUNC||a->type->expr)
             syntax_error(12,id->name);
         else{
@@ -283,16 +301,15 @@ A_ID *setFunctionDeclaratorSpecifier(A_ID *id,A_SPECIFIER *p){
             if(isNotSameType(a->type->element_type,id->type->element_type))
                 syntax_error(26,a->name);
         }
-        a=id->type->field;
-        while(a){
-            if(strlen(a->name))
-                current_id=a;
-            else if(a->type)
-                syntax_error(23,NULL);
-            a=a->link;
-        }
-        return id;
+    a=id->type->field;
+    while(a){
+        if(strlen(a->name))
+            current_id=a;
+        else if(a->type)
+            syntax_error(23,NULL);
+        a=a->link;
     }
+    return id;
 }
 
 A_ID *setFunctionDeclaratorBody(A_ID *id,A_NODE *n){
@@ -412,10 +429,10 @@ BOOLEAN isPointerOrArrayType(A_TYPE *t){
 }
 
 void initialize(){
-    int_type=setTypeAndKindOfDeclarator(makeType(T_ENUM),ID_TYPE,makeDummyIdentifier("int"));
-    float_type=setTypeAndKindOfDeclarator(makeType(T_ENUM),ID_TYPE,makeDummyIdentifier("float"));
-    char_type=setTypeAndKindOfDeclarator(makeType(T_ENUM),ID_TYPE,makeDummyIdentifier("char"));
-    void_type=setTypeAndKindOfDeclarator(makeType(T_VOID),ID_TYPE,makeDummyIdentifier("void"));
+    int_type=setTypeAndKindOfDeclarator(makeType(T_ENUM),ID_TYPE,makeIdentifier("int"));
+    float_type=setTypeAndKindOfDeclarator(makeType(T_ENUM),ID_TYPE,makeIdentifier("float"));
+    char_type=setTypeAndKindOfDeclarator(makeType(T_ENUM),ID_TYPE,makeIdentifier("char"));
+    void_type=setTypeAndKindOfDeclarator(makeType(T_VOID),ID_TYPE,makeIdentifier("void"));
     string_type=setTypeElementType(makeType(T_POINTER),char_type);
     int_type->size=4;       int_type->check=TRUE;
     float_type->size=4;     float_type->check=TRUE;

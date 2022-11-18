@@ -543,7 +543,7 @@ char *yytext;
 typedef long YYSTYPE;
 #include "y.tab.h"
 #include "type.h"
-//extern int yylval;
+extern long yylval;
 extern int line_no;
 extern A_ID *current_id;
 int checkIdentifier();

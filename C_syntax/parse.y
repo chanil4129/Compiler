@@ -200,8 +200,8 @@ labeled_statement
     ;
 
 compound_statement
-	: LR {$$=current_id; current_level++;} declaration_list_opt statement_list_opt RR {$$=makeNode(N_STMT_COMPOUND,$2,0,$3);}
-	  {checkForwardReference(); current_level--; current_id=$3;}
+	: LR {$$=current_id; current_level++;} declaration_list_opt statement_list_opt RR 
+	  {$$=makeNode(N_STMT_COMPOUND,$3,NIL,$4); checkForwardReference(); current_level--; current_id=$2;}
     ;
 declaration_list
 	: declaration						{$$=$1;}
