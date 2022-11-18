@@ -2,6 +2,10 @@
 #define YYSTYPE_IS_DECLARED 1
 typedef long YYSTYPE;
 #include "header.h"
+extern A_NODE *root;
+extern A_ID *current_id;
+extern int current_level;
+extern A_TYPE *int_type;
 %}
 %token AUTO_SYM BREAK_SYM CASE_SYM CONTINUE_SYM DEFAULT_SYM DO_SYM 
 ELSE_SYM ENUM_SYM FOR_SYM IF_SYM RETURN_SYM SIZEOF_SYM STATIC_SYM 
