@@ -1,4 +1,5 @@
-int f(){
-    b();
-    int a=3;
+var a;
+
+int main(void){
+    var b;
 }

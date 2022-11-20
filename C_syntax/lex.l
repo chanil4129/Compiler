@@ -1,5 +1,5 @@
 digit                           [0-9]
-letter                          [a-zA-Z]
+letter                          [a-zA-Z_]
 delim                           [ \t]
 line                            [\n]
 ws                              {delim}+
@@ -59,7 +59,7 @@ while                           {return(WHILE_SYM);}
 "\{"                            {return(LR);}
 "\}"                            {return(RR);}
 "\:"                            {return(COLON);}
-"\."                            {return(PEROID);}
+"\."                            {return(PERIOD);}
 "\,"                            {return(COMMA);}
 "\!"                            {return(EXCL);}
 "\*"                            {return(STAR);}
@@ -75,6 +75,7 @@ while                           {return(WHILE_SYM);}
 {letter}({letter}|{digit})*     {return(checkIdentifier(yytext));}
 \"([^"\n]|\\["\n])*\"           {yylval=makeString(yytext); return(STRING_LITERAL);}
 \'([^'\n]|\'\')\'               {yylval=*(yytext+1); return(CHARACTER_CONSTANT);}
+"//"[^\n]*
 %%
 char *makeString(char *s){
     char *t;

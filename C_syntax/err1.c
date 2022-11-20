@@ -1,5 +1,9 @@
-typedef enum {false,true} BOOLEAN;
+int a=10;
+int a;
 
-BOOLEAN fun (int a){
-    int x=0;
+int fun(){
+    return 1;
+}
+int fun(){
+    return 2;
 }

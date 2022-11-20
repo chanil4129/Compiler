@@ -15,13 +15,13 @@ int main(void){
     print_ast(root);
 }
 
+int yywrap(){
+    return 1;
+}
+
 void yyerror(char *s){
     printf("line %d: %s near %s\n",line_no,s,yytext);
     exit(1);
-}
-
-int yywrap(){
-    return 1;
 }
 
 A_NODE *makeNode(NODE_NAME n,A_NODE *a,A_NODE *b,A_NODE *c){
@@ -141,7 +141,7 @@ A_SPECIFIER *updateSpecifier(A_SPECIFIER *p,A_TYPE *t,S_KIND s){
             if(p->type==t)
                 ;
             else
-                syntax_error(24,NULL);
+                syntax_error(24,"");
         }
         else
             p->type=t;
@@ -151,7 +151,7 @@ A_SPECIFIER *updateSpecifier(A_SPECIFIER *p,A_TYPE *t,S_KIND s){
             if(s==p->stor)
                 ;
             else
-                syntax_error(24,NULL);
+                syntax_error(24,"");
         }
         else
             p->stor=s;
@@ -182,6 +182,7 @@ void setDefaultSpecifier(A_SPECIFIER *p){
     if(p->stor==S_NULL)
         p->stor=S_AUTO;
 }
+
 A_ID *linkDeclaratorList(A_ID *id1,A_ID *id2){
     A_ID *m=id1;
     if(id1==NIL)
@@ -281,33 +282,37 @@ A_ID *setDeclaratorListSpecifier(A_ID *id,A_SPECIFIER *p){
 A_ID *setFunctionDeclaratorSpecifier(A_ID *id,A_SPECIFIER *p){
     A_ID *a;
     if(p->stor)
-        syntax_error(25,NULL);
+        syntax_error(25,"");
     setDefaultSpecifier(p);
-    if(id->type->kind!=T_FUNC){
-        syntax_error(21,NULL);
-        return id;
-    }
+    if(!id->type)
+        syntax_error(24,"");
     else{
-        id=setDeclaratorElementType(id,p->type);
-        id->kind=ID_FUNC;
-    }
-    a=searchIdentifierAtCurrentLevel(id->name,id->prev);
-    if(a)
-        if(a->kind!=ID_FUNC||a->type->expr)
-            syntax_error(12,id->name);
-        else{
-            if(isNotSameFormalParameters(a->type->field,id->type->field))
-                syntax_error(22,id->name);
-            if(isNotSameType(a->type->element_type,id->type->element_type))
-                syntax_error(26,a->name);
+        if(id->type->kind!=T_FUNC){
+            syntax_error(21,"");
+            return id;
         }
-    a=id->type->field;
-    while(a){
-        if(strlen(a->name))
-            current_id=a;
-        else if(a->type)
-            syntax_error(23,NULL);
-        a=a->link;
+        else{
+            id=setDeclaratorElementType(id,p->type);
+            id->kind=ID_FUNC;
+        }
+        a=searchIdentifierAtCurrentLevel(id->name,id->prev);
+        if(a)
+            if(a->kind!=ID_FUNC||a->type->expr)
+                syntax_error(12,id->name);
+            else{
+                if(isNotSameFormalParameters(a->type->field,id->type->field))
+                    syntax_error(22,id->name);
+                if(isNotSameType(a->type->element_type,id->type->element_type))
+                    syntax_error(26,a->name);
+            }
+        a=id->type->field;
+        while(a){
+            if(strlen(a->name))
+                current_id=a;
+            // else if(a->type)
+            //     syntax_error(23,NULL);
+            a=a->link;
+        }
     }
     return id;
 }
@@ -320,8 +325,9 @@ A_ID *setFunctionDeclaratorBody(A_ID *id,A_NODE *n){
 A_ID *setParameterDeclaratorSpecifier(A_ID *id,A_SPECIFIER *p){
     if(searchIdentifierAtCurrentLevel(id->name,id->prev))
         syntax_error(12,id->name);
-    if(p->stor||p->type==void_type)
-        syntax_error(14,NULL);
+    // if(p->stor||p->type==void_type)
+    if(p->stor)
+        syntax_error(14,"");
     setDefaultSpecifier(p);
     id=setDeclaratorElementType(id,p->type);
     id->kind=ID_PARM;
@@ -343,7 +349,7 @@ A_ID *setStructDeclaratorListSpecifier(A_ID *id,A_TYPE *t){
 
 A_TYPE *setTypeNameSpecifier(A_TYPE *t,A_SPECIFIER *p){
     if(p->stor)
-        syntax_error(20,NULL);
+        syntax_error(20,"");
     setDefaultSpecifier(p);
     t=setTypeElementType(t,p->type);
     return t;
@@ -422,10 +428,14 @@ BOOLEAN isNotSameType(A_TYPE *t1,A_TYPE *t2){
 }
 
 BOOLEAN isPointerOrArrayType(A_TYPE *t){
-    if(t->kind==T_ARRAY || t->kind==T_POINTER)
-        return TRUE;
-    else
+    if(t==NULL)
         return FALSE;
+    else{
+        if(t->kind==T_ARRAY || t->kind==T_POINTER)
+            return TRUE;
+        else
+            return FALSE;
+    }
 }
 
 void initialize(){

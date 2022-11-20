@@ -6,6 +6,7 @@ extern A_NODE *root;
 extern A_ID *current_id;
 extern int current_level;
 extern A_TYPE *int_type;
+extern int line_no,syntax_err;
 %}
 %token AUTO_SYM BREAK_SYM CASE_SYM CONTINUE_SYM DEFAULT_SYM DO_SYM 
 ELSE_SYM ENUM_SYM FOR_SYM IF_SYM RETURN_SYM SIZEOF_SYM STATIC_SYM 
@@ -42,7 +43,10 @@ declaration_list_opt
 	: {$$=NIL;}
 	| declaration_list {$$=$1;}
 	;
-
+declaration_list
+	: declaration {$$=$1;}
+	| declaration_list declaration {$$=linkDeclaratorList($1,$2);}
+	;
 declaration
 	: declaration_specifiers init_declarator_list_opt SEMICOLON {$$=setDeclaratorListSpecifier($2,$1);}
     ;
@@ -71,20 +75,23 @@ init_declarator
 	: declarator						{$$=$1;}
 	| declarator ASSIGN initializer		{$$=setDeclaratorInit($1,$3);}
     ;
-
+initializer
+	: constant_expression			{$$=makeNode(N_INIT_LIST_ONE,NIL,$1,NIL);}
+	| LR initializer_list RR		{$$=$2;}
+    ;
 type_specifier
-	: struct_specifier	{$$=$1;}
-	| enum_specifier	{$$=$1;}
+	: struct_type_specifier	{$$=$1;}
+	| enum_type_specifier	{$$=$1;}
 	| TYPE_IDENTIFIER	{$$=$1;}
     ;
 
-struct_specifier
+struct_type_specifier
 	: struct_or_union IDENTIFIER		{$$=setTypeStructOrEnumIdentifier($1,$2,ID_STRUCT);}
 	  LR {$$=current_id; current_level++;} struct_declaration_list RR
-	  {checkForwardReference(); current_level--; current_id=$5; $$=setTypeField($3,$6);}
+	  {checkForwardReference(); $$=setTypeField($3,$6); current_level--; current_id=$5;}
 	| struct_or_union {$$=makeType($1);}
 	  LR {$$=current_id; current_level++;} struct_declaration_list RR
-	  {checkForwardReference(); current_level--; current_id=$4; $$=setTypeField($2,$5);}
+	  {checkForwardReference(); $$=setTypeField($2,$5); current_level--; current_id=$4;}
 	| struct_or_union IDENTIFIER		{$$=getTypeOfStructOrEnumRefIdentifier($1,$2,ID_STRUCT);}
     ;
 struct_or_union
@@ -96,7 +103,7 @@ struct_declaration_list
 	| struct_declaration_list struct_declaration	{$$=linkDeclaratorList($1,$2);}
     ;
 struct_declaration
-	: type_specifier struct_declarator_list SEMICOLON		{$$=setDeclaratorListSpecifier($2,$1);}
+	: type_specifier struct_declarator_list SEMICOLON		{$$=setStructDeclaratorListSpecifier($2,$1);}
     ;
 struct_declarator_list
 	: struct_declarator										{$$=$1;}
@@ -104,11 +111,9 @@ struct_declarator_list
     ;
 struct_declarator
 	: declarator									{$$=$1;}
-    | COLON constant_expression
-    | declarator COLON constant_expression
     ;
 
-enum_specifier
+enum_type_specifier
 	: ENUM_SYM IDENTIFIER {$$=setTypeStructOrEnumIdentifier(T_ENUM,$2,ID_ENUM);} LR enumerator_list RR {$$=setTypeField($3,$5);}
 	| ENUM_SYM {$$=makeType(T_ENUM);} LR enumerator_list RR {$$=setTypeField($2,$4);}
 	| ENUM_SYM IDENTIFIER {$$=getTypeOfStructOrEnumRefIdentifier(T_ENUM,$2,ID_ENUM);}
@@ -139,10 +144,7 @@ direct_declarator
 	  parameter_type_list_opt RP
 	  {checkForwardReference(); current_level--; current_id=$3; $$=setDeclaratorElementType($1,setTypeField(makeType(T_FUNC),$4));}
     ;
-constant_expression_opt
-	:						{$$=NIL;}
-	| constant_expression	{$$=$1;}
-    ;
+
 parameter_type_list_opt
 	:						{$$=NIL;}
 	| parameter_type_list	{$$=$1;}
@@ -165,7 +167,7 @@ abstract_declarator_opt
     | abstract_declarator	{$$=$1;}
     ;
 abstract_declarator
-	: pointer								{$$=makeType(T_POINTER);}
+	: pointer								{$$=$1;}
 	| direct_abstract_declarator			{$$=$1;}
 	| pointer direct_abstract_declarator	{$$=setTypeElementType($2,makeType(T_POINTER));}
     ;
@@ -177,10 +179,6 @@ direct_abstract_declarator
 	| direct_abstract_declarator LP parameter_type_list_opt RP	{$$=setTypeElementType($1,setTypeExpr(makeType(T_FUNC),$3));}
     ;
 
-initializer
-	: constant_expression			{$$=makeNode(N_INIT_LIST_ONE,NIL,$1,NIL);}
-	| LR initializer_list RR		{$$=$2;}
-    ;
 initializer_list
 	: initializer							{$$=makeNode(N_INIT_LIST,$1,NIL,makeNode(N_INIT_LIST_NIL,NIL,NIL,NIL));}
 	| initializer_list COMMA initializer	{$$=makeNodeList(N_INIT_LIST,$1,$3);}
@@ -201,15 +199,11 @@ labeled_statement
 
 compound_statement
 	: LR {$$=current_id; current_level++;} declaration_list_opt statement_list_opt RR 
-	  {$$=makeNode(N_STMT_COMPOUND,$3,NIL,$4); checkForwardReference(); current_level--; current_id=$2;}
-    ;
-declaration_list
-	: declaration						{$$=$1;}
-	| declaration_list declaration		{$$=linkDeclaratorList($1,$2);}
+	  {checkForwardReference(); $$=makeNode(N_STMT_COMPOUND,$3,NIL,$4); current_id=$2; current_level--;}
     ;
 
 statement_list_opt
-	: {$$=makeNode(N_STMT_LIST_NIL,NIL,NIL,NIL);}
+	: 					{$$=makeNode(N_STMT_LIST_NIL,NIL,NIL,NIL);}
 	| statement_list	{$$=$1;}
 	;
 
@@ -232,13 +226,16 @@ selection_statement
 iteration_statement
 	: WHILE_SYM LP expression RP statement		{$$=makeNode(N_STMT_WHILE,$3,NIL,$5);}
 	| DO_SYM statement WHILE_SYM LP expression RP SEMICOLON		{$$=makeNode(N_STMT_DO,$2,NIL,$5);}
-	| FOR_SYM LP expression_opt SEMICOLON expression_opt SEMICOLON expression_opt RP statement	{$$=makeNode(N_STMT_FOR,$3,NIL,$5);}
+	| FOR_SYM LP for_expression RP statement	{$$=makeNode(N_STMT_FOR,$3,NIL,$5);}
     ;
 expression_opt
 	:				{$$=NIL;}
 	| expression	{$$=$1;}
     ;
 
+for_expression
+	: expression_opt SEMICOLON expression_opt SEMICOLON expression_opt {$$=makeNode(N_FOR_EXP,$1,$3,$5);}
+	;
 jump_statement
 	: RETURN_SYM expression_opt SEMICOLON	{$$=makeNode(N_STMT_RETURN,NIL,$2,NIL);}
 	| CONTINUE_SYM SEMICOLON				{$$=makeNode(N_STMT_CONTINUE,NIL,NIL,NIL);}
@@ -268,10 +265,29 @@ arg_expression_list_opt
 	| arg_expression_list	{$$=$1;}
     ;
 arg_expression_list
-	: expression				{$$=makeNode(N_ARG_LIST,$1,NIL,makeNode(N_ARG_LIST_NIL,NIL,NIL,NIL));}
-	| arg_expression_list COMMA expression	{$$=makeNodeList(N_ARG_LIST,$1,$3);}
+	: assignment_expression				{$$=makeNode(N_ARG_LIST,$1,NIL,makeNode(N_ARG_LIST_NIL,NIL,NIL,NIL));}
+	| arg_expression_list COMMA assignment_expression	{$$=makeNodeList(N_ARG_LIST,$1,$3);}
     ;
-
+constant_expression_opt
+	:						{$$=NIL;}
+	| constant_expression	{$$=$1;}
+    ;	
+constant_expression
+	: expression		{$$=$1;}
+    ;
+expression
+	: comma_expression	{$$=$1;}
+    ;
+comma_expression
+	: assignment_expression {$$=$1;}
+	;
+assignment_expression
+	: conditional_expression {$$=$1;}
+	| unary_expression ASSIGN assignment_expression {$$=makeNode(N_EXP_ASSIGN,$1,NIL,$3);}
+	;
+conditional_expression
+	:logical_or_expression {$$=$1;}
+	;
 unary_expression
 	: postfix_expression			{$$=$1;}
 	| PLUSPLUS unary_expression		{$$=makeNode(N_EXP_PRE_INC,NIL,$2,NIL);}
@@ -306,13 +322,12 @@ additive_expression
 shift_expression
 	: additive_expression		{$$=$1;}
 	;
-
 relational_expression
 	: shift_expression		{$$=$1;}
-	| relational_expression LSS additive_expression		{$$=makeNode(N_EXP_LSS,$1,NIL,$3);}
-	| relational_expression GTR additive_expression		{$$=makeNode(N_EXP_GTR,$1,NIL,$3);}
-	| relational_expression LEQ additive_expression		{$$=makeNode(N_EXP_LEQ,$1,NIL,$3);}
-	| relational_expression GEQ additive_expression		{$$=makeNode(N_EXP_GEQ,$1,NIL,$3);}
+	| relational_expression LSS shift_expression		{$$=makeNode(N_EXP_LSS,$1,NIL,$3);}
+	| relational_expression GTR shift_expression		{$$=makeNode(N_EXP_GTR,$1,NIL,$3);}
+	| relational_expression LEQ shift_expression		{$$=makeNode(N_EXP_LEQ,$1,NIL,$3);}
+	| relational_expression GEQ shift_expression		{$$=makeNode(N_EXP_GEQ,$1,NIL,$3);}
     ;
 equality_expression
 	: relational_expression		{$$=$1;}
@@ -320,22 +335,22 @@ equality_expression
 	| equality_expression NEQ relational_expression		{$$=makeNode(N_EXP_NEQ,$1,NIL,$3);}
     ;
 
-logical_AND_expression
-	: equality_expression	{$$=$1;}
-	| logical_AND_expression AMPAMP equality_expression		{$$=makeNode(N_EXP_OR,$1,NIL,$3);}
+logical_and_expression
+	: bitwise_or_expression	{$$=$1;}
+	| logical_and_expression AMPAMP bitwise_or_expression		{$$=makeNode(N_EXP_AND,$1,NIL,$3);}
     ;
-logical_OR_expression
-	: logical_AND_expression	{$$=$1;}
-	| logical_OR_expression BARBAR logical_AND_expression	{$$=makeNode(N_EXP_AND,$1,NIL,$3);}
+logical_or_expression
+	: logical_and_expression	{$$=$1;}
+	| logical_or_expression BARBAR logical_and_expression	{$$=makeNode(N_EXP_OR,$1,NIL,$3);}
     ;
-
-expression
-	: constant_expression	{$$=$1;}
-	| unary_expression ASSIGN expression	{$$=makeNode(N_EXP_ASSIGN,$1,NIL,$3);}
-    ;
-
-constant_expression
-	: logical_OR_expression		{$$=$1;}
-    ;
+bitwise_or_expression
+	: bitwise_xor_expression {$$=$1;}
+	;
+bitwise_xor_expression
+	: bitwise_and_expression {$$=$1;}
+	;
+bitwise_and_expression
+	: equality_expression {$$=$1;}
+	;
 
 %%
