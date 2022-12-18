@@ -2,6 +2,15 @@
 #include <string.h>
 #include "type.h"
 
+typedef enum op {OP_NULL, LOD,LDX,LDXB, LDA, LITI, 
+	STO,STOB,STX,STXB,
+	SUBI,SUBF,DIVI,DIVF,ADDI,ADDF,OFFSET,MULI,MULF, MOD, 
+	LSSI,LSSF,GTRI,GTRF, LEQI,LEQF,GEQI,GEQF,NEQI,NEQF,EQLI,EQLF, 
+	NOT, OR, AND, CVTI,CVTF, 
+	JPC,JPCR,JMP,JPT,JPTR,INT,INCI,INCF,DECI,DECF,SUP,CAL,ADDR,
+	RET, MINUSI,MINUSF,CHK,LDI,LDIB,POP
+} OPCODE;
+
 char *opcode_name[] = {
     "OP_NULL", "LOD", "LDX", "LDXB", "LDA", "LITI", "STO", "STOB", 
     "STX", "STXB", "SUBI", "SUBF", "DIVI", "DIVF", "ADDI", "ADDF", 
@@ -9,7 +18,7 @@ char *opcode_name[] = {
     "LEQI", "LEQF", "GEQI", "GEQF", "NEQI", "NEQF", "EQLI", "EQLF", 
     "NOT", "OR", "AND", "CVTI", "CVTF", "JPC", "JPCR", "JMP", "JPT", 
     "JPTR", "INT", "INCI", "INCF", "DECI", "DECF", "SUP", "CAL", "ADDR", 
-    "RET", "MINUSI", "MINUSF", "CHK", "LDI", "LDIB", "POP", "POPB"
+    "RET", "MINUSI", "MINUSF", "CHK", "LDI", "LDIB","POP"
 };
 
 void code_generation(A_NODE *node);
@@ -75,6 +84,7 @@ void gen_program(A_NODE *node){
 	}
 }
 
+//수식에 해당하는 어셈블리 코드
 void gen_expression(A_NODE *node){
     A_ID *id;
 	A_TYPE *t;
@@ -286,7 +296,8 @@ void gen_expression(A_NODE *node){
 			i = node->type->size;
 			if (i == 1) {
 				gen_code_i(LDIB, 0, 0);
-			} else {
+			} 
+			else {
 				gen_code_i(LDI, 0, (i % 4) ? (i / 4 + 1) : (i / 4));
 			}
 			break;
@@ -569,6 +580,7 @@ int get_label(){
     return label_no;
 }
 
+//명령문에 해당하는 statement 어셈블리
 void gen_statement(A_NODE *node, int count_label, int break_label){
     A_NODE *n;
 	int i,l1,l2,l3;
@@ -707,11 +719,12 @@ void gen_declaration(A_ID *id){
 	switch (id->kind) {
 		case ID_VAR:
 			if (id->init) {
+				//초기화가 없기때문에 할게 없음
 			}
 			break;
 		case ID_FUNC:
 			if (id->type->expr) {
-				gen_label_name(id->name);
+				gen_label_name(id->name); //함수 레이블 출력
 				gen_code_i(INT, 0, id->type->local_var_size);
 				gen_statement(id->type->expr, 0, 0);
 				gen_code_i(RET, 0, 0);

@@ -4,12 +4,17 @@ extern char *yytext;
 A_TYPE *int_type,*char_type,*void_type,*float_type,*string_type;
 A_NODE *root;
 A_ID *current_id=NIL;
+FILE *fout;
 int syntax_err=0;
 extern semantic_err;
 int line_no=1;
 int current_level=0;
 
 int main(void){
+    if((fout=fopen("a.asm","w"))==NULL){
+        printf("can't open output file: a.asm\n");
+        exit(1);
+    }
     initialize();
     yyparse();
     if(syntax_err) exit(1);

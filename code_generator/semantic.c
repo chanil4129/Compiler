@@ -409,6 +409,7 @@ void sem_arg_expr_list(A_NODE *node,A_ID *id){
 					t=sem_expression(node->llink);
 					sem_arg_expr_list(node->rlink,id); 
 				}
+				arg_size=node->llink->type->size+node->rlink->value;
 			}
 			break;
 		case N_ARG_LIST_NIL :
@@ -849,7 +850,7 @@ A_NODE *convertUsualUnaryConversion(A_NODE *node){
         node=makeNode(N_EXP_CAST,t,NIL,node);
         node->type-t;
     }
-    else if(!isArrayType(t)){
+    else if(isArrayType(t)){
         t=setTypeElementType(makeType(T_POINTER),t->element_type);
         t->size=4;
         node=makeNode(N_EXP_CAST,t,NIL,node);
