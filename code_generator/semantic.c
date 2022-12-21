@@ -210,6 +210,7 @@ A_TYPE *sem_expression(A_NODE *node){
                 semantic_error(60,node->line,"");
                 break;
         case N_EXP_CAST:
+			result=sem_expression(node->clink);
             result=node->llink;
             i=sem_A_TYPE(result);
             t=sem_expression(node->rlink);
@@ -369,11 +370,12 @@ A_TYPE *sem_expression(A_NODE *node){
 			if (!isModifiableLvalue(node->llink))
 				semantic_error(60,node->line,"");
 			t=sem_expression(node->rlink);
-			if (isAllowableAssignmentConversion(result,t,node)){
+			if (isAllowableAssignmentConversion(result,t,node->rlink)){
 				if (isArithmeticType(result) && isArithmeticType(t))
-					node->rlink=convertUsualAssignmentConversion (result,node->rlink);}
-			else
-				semantic_error(58,node->line,"");
+					node->rlink=convertUsualAssignmentConversion (result,node->rlink);
+			}
+			// else
+			// 	semantic_error(58,node->line,"");
 			break;
         default:
             semantic_error(90,node->line,"");
@@ -689,8 +691,9 @@ int sem_declaration(A_ID *id,int addr){
 		case ID_VAR:
 			i=sem_A_TYPE(id->type);
             //check empty array
-			if (isArrayType(id->type) && id->type->expr == NIL) 
+			if (isArrayType(id->type) && id->type->expr == NIL) {
 				semantic_error(86, id->line,"");
+			}
 			if (i % 4) i = i / 4 * 4 + 4; 
 			if (id->specifier == S_STATIC) // static 속성의 지역변수는 전역변수로 전환
                 id->level = 0;

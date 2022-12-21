@@ -383,7 +383,7 @@ A_TYPE *setTypeField(A_TYPE *t,A_ID *n){
 }
 
 A_TYPE *setTypeExpr(A_TYPE *t,A_NODE *n){
-    t->expr-n;
+    t->expr=n;
     return t;
 }
 

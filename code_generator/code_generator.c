@@ -192,7 +192,7 @@ void gen_expression(A_NODE *node){
 			if (node->type->size == 1) {
 				gen_code_i(STOB, 0, 0);
 			} else {
-				gen_code_i(STO, 0, 1);
+				gen_code_i(STO, 0, 0);
 			}
 
 			break;
@@ -218,7 +218,7 @@ void gen_expression(A_NODE *node){
 			if (node->type->size == 1) {
 				gen_code_i(STOB, 0, 0);
 			} else {
-				gen_code_i(STO, 0, 1);
+				gen_code_i(STO, 0, 0);
 			}
 
 			break;
@@ -461,8 +461,11 @@ void gen_expression(A_NODE *node){
 			i = node->type->size;
 			if (i == 1) {
 				gen_code_i(STXB, 0, 0);
-			} else {
-				gen_code_i(STX, 0, (i % 4) ? (i / 4 + 1) : (i / 4));
+			} 
+			else {
+				// gen_code_i(STX, 0, (i % 4) ? (i / 4 + 1) : (i / 4));
+				//20182601
+				gen_code_i(STX, 0, 0);
 			}
 			break;
 		default:
